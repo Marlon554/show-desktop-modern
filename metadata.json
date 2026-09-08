@@ -1,0 +1,31 @@
+{
+	"KPackageStructure": "Plasma/Applet",
+	"KPlugin": {
+		"Authors": [
+			{
+				"Email": "marlondias08@gmail.com",
+				"Name": "Erick Marlon Dias"
+			}
+		],
+		"BugReportUrl": "https://github.com/marlon554/show-desktop-modern/issues",
+		"Category": "Windows and Tasks",
+		"Description": "A modern and discreet version of the Plasma 'Peek at Desktop' widget. Fork of Zren's Win7 Show Desktop",
+		"Description[ar]": "نسخة حديثة وبسيطة من أداة «أظهر سطح المكتب» في بلازما. تفرّع من Win7 Show Desktop الخاص بـ Zren",
+		"Description[es]": "Una versión moderna y discreta del widget «Echar un vistazo al escritorio» de Plasma. Fork del Win7 Show Desktop de Zren",
+		"Description[fr]": "Une version moderne et discrète du widget « Coup d'œil sur le bureau » de Plasma. Fork du Win7 Show Desktop de Zren",
+		"Description[nl]": "Een moderne en discrete versie van de Plasma-widget 'Bureaublad bekijken'. Fork van Zrens Win7 Show Desktop",
+		"Description[pt_BR]": "Uma versão moderna e discreta do widget 'Espiar área de trabalho' do Plasma. Fork do Win7 Show Desktop do Zren",
+		"FormFactors": [
+			"desktop"
+		],
+		"Icon": "user-desktop",
+		"Id": "show-desktop-modern",
+		"License": "GPL-2.0+",
+		"Name": "Show Desktop Modern",
+		"Website": "https://github.com/marlon554/show-desktop-modern"
+	},
+	"X-Plasma-API-Minimum-Version": "6.0",
+	"X-Plasma-Provides": [
+		"org.kde.plasma.windowmanagement"
+	]
+}
