@@ -1,6 +1,6 @@
 # Show Desktop Modern
 
-A fork of [Zren's Win7 Show Desktop](https://github.com/Zren/plasma-applet-win7showdesktop) with minor changes, like a subtle pill-shaped button.
+A fork of [Zren's Win7 Show Desktop](https://github.com/Zren/plasma-applet-win7showdesktop) with minor changes, such a subtle pill-shaped look.
 
 [Gravação_de_tela_20260908_024120.webm](https://github.com/user-attachments/assets/49e7fcae-4e7f-44e0-9c88-0fe166b4079f)
 
