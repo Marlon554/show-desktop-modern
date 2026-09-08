@@ -13,7 +13,6 @@ import QtQuick.Layouts 1.3
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.kirigami as Kirigami
-import org.kde.ksvg as KSvg
 
 import org.kde.plasma.plasmoid
 
@@ -53,7 +52,6 @@ PlasmoidItem {
 	readonly property bool inPanel: [PlasmaCore.Types.TopEdge, PlasmaCore.Types.RightEdge, PlasmaCore.Types.BottomEdge, PlasmaCore.Types.LeftEdge]
 			.includes(Plasmoid.location)
 
-	readonly property bool horizontal: Plasmoid.location === PlasmaCore.Types.TopEdge || Plasmoid.location === PlasmaCore.Types.BottomEdge
 	readonly property bool vertical: Plasmoid.location === PlasmaCore.Types.RightEdge || Plasmoid.location === PlasmaCore.Types.LeftEdge
 
 	readonly property Controller primaryController: {
@@ -76,17 +74,49 @@ PlasmoidItem {
 
 	property bool isPeeking: false
 
+	// --- Desktop Pill styling: solid KDE Plasma accent color, no outline ----
+	// Kirigami.Theme.highlightColor already reflects Plasma's global accent
+	// color setting. The pill is transparent at rest - including while the
+	// action is active (desktop shown / windows minimized) - and only turns
+	// solid on hover or press. Never a semi-transparent tint: it's either
+	// fully solid or fully invisible.
+	readonly property color accentColor: Kirigami.Theme.highlightColor
+
+	// Returns the user's custom override for `key` when accent-color mode is
+	// disabled and a value was actually set, otherwise `fallback`.
+	function customOr(key, fallback) {
+		if (!Plasmoid.configuration.useAccentColor && Plasmoid.configuration[key]) {
+			return Plasmoid.configuration[key];
+		}
+		return fallback;
+	}
+
+	// Base solid accent color of the pill, used for hover/pressed/active shades.
+	readonly property color pillBaseColor: customOr('activeColor', accentColor)
+
+	readonly property color pillIdleColor: "transparent"
+	readonly property color pillHoverColor: customOr('hoveredColor', Qt.lighter(pillBaseColor, 1.18))
+	readonly property color pillPressedColor: customOr('pressedColor', Qt.darker(pillBaseColor, 1.3))
+
+	readonly property color pillDisplayColor: {
+		if (mouseArea.state === "pressed") {
+			return pillPressedColor;
+		}
+		if (mouseArea.state === "hover") {
+			return pillHoverColor;
+		}
+		// Idle: always transparent, even while the action is active (desktop
+		// shown / windows minimized) - the accent color only shows up on
+		// direct interaction (hover/press).
+		return pillIdleColor;
+	}
+
 	MouseArea {
 		id: mouseArea
 		anchors.fill: parent
-		anchors.rightMargin: -panelMargins.panelEdgeMargin
 
 		activeFocusOnTab: true
 		hoverEnabled: true
-
-		PanelMargins {
-			id: panelMargins
-		}
 
 		onClicked: Plasmoid.activated();
 
@@ -187,157 +217,37 @@ PlasmoidItem {
 			}
 		}
 
-		component ButtonSurface : Rectangle {
-			property var containerMargins: {
-				let item = this;
-				while (item.parent) {
-					item = item.parent;
-					if (item.isAppletContainer) {
-						return item.getMargins;
-					}
-				}
-				return undefined;
-			}
-
-			anchors {
-				fill: parent
-				property bool returnAllMargins: true
-				// The above makes sure margin is returned even for side margins
-				// that would be otherwise turned off.
-				topMargin: !vertical && containerMargins ? -containerMargins('top', returnAllMargins) : 0
-				leftMargin: vertical && containerMargins ? -containerMargins('left', returnAllMargins) : 0
-				rightMargin: vertical && containerMargins ? -containerMargins('right', returnAllMargins) : 0
-				bottomMargin: !vertical && containerMargins ? -containerMargins('bottom', returnAllMargins) : 0
-			}
-			Behavior on opacity { OpacityAnimator { duration: Kirigami.Units.longDuration; easing.type: Easing.OutCubic } }
-		}
-
-		ButtonSurface {
-			id: hoverSurface
-			color: Plasmoid.configuration.hoveredColor
-			opacity: mouseArea.state === "hover" ? 1 : 0
-		}
-
-		ButtonSurface {
-			id: pressedSurface
-			color: Plasmoid.configuration.pressedColor
-			opacity: mouseArea.state === "pressed" ? 1 : 0
-		}
-
+		// Desktop Pill visual: a single, always-solid, fully-opaque accent-
+		// colored capsule. Its thickness is measured on the SAME axis as
+		// "Size" (width in a horizontal panel, height in a vertical panel) -
+		// i.e. it's a thin line running along the panel's thickness, not a
+		// wide block. It is its own independently configurable size and does
+		// NOT affect the MouseArea above, which still fills the whole widget
+		// so the clickable/hoverable area stays exactly as large as before,
+		// regardless of how thin or discreet the visible pill is drawn.
 		Rectangle {
-			id: edgeLine
-			states: [
-				State {
-					name: "desktopWidget"
-					when: !root.inPanel
-					// Draw border around button
-					AnchorChanges {
-						target: edgeLine
-						anchors.left: edgeLine.parent.left
-						anchors.right: edgeLine.parent.right
-						anchors.top: edgeLine.parent.top
-						anchors.bottom: edgeLine.parent.bottom
-					}
-					PropertyChanges {
-						target: edgeLine
-						color: "transparent"
-						border.color: Plasmoid.configuration.edgeColor
-						border.width: 1
-					}
-				},
-				State {
-					name: "horizontalPanel"
-					when: root.horizontal
-					// Draw line on left of button (assume location at right edge of panel)
-					AnchorChanges {
-						target: edgeLine
-						anchors.left: edgeLine.parent.left
-						anchors.right: undefined
-						anchors.top: edgeLine.parent.top
-						anchors.bottom: edgeLine.parent.bottom
-					}
-					PropertyChanges {
-						target: edgeLine
-						color: Plasmoid.configuration.edgeColor
-						width: 1
-						border.color: "transparent"
-						border.width: 0
-					}
-				},
-				State {
-					name: "verticalPanel"
-					when: root.vertical
-					// Draw line on top of button (assume location at bottom edge of panel)
-					AnchorChanges {
-						target: edgeLine
-						anchors.left: edgeLine.parent.left
-						anchors.right: edgeLine.parent.right
-						anchors.top: edgeLine.parent.top
-						anchors.bottom: undefined
-					}
-					PropertyChanges {
-						target: edgeLine
-						color: Plasmoid.configuration.edgeColor
-						height: 1
-						border.color: "transparent"
-						border.width: 0
-					}
-				}
-			]
-		}
+			id: pill
 
-		// Active/not active indicator
-		KSvg.FrameSvgItem {
-			property var containerMargins: {
-				let item = this;
-				while (item.parent) {
-					item = item.parent;
-					if (item.isAppletContainer) {
-						return item.getMargins;
-					}
-				}
-				return undefined;
-			}
+			readonly property int thickness: Math.max(1, Plasmoid.configuration.pillThickness)
+			readonly property int length: Math.max(1, Plasmoid.configuration.pillLength)
 
-			anchors {
-				fill: parent
-				property bool returnAllMargins: true
-				// The above makes sure margin is returned even for side margins
-				// that would be otherwise turned off.
-				topMargin: !vertical && containerMargins ? -containerMargins('top', returnAllMargins) : 0
-				leftMargin: vertical && containerMargins ? -containerMargins('left', returnAllMargins) : 0
-				rightMargin: vertical && containerMargins ? -containerMargins('right', returnAllMargins) : 0
-				bottomMargin: !vertical && containerMargins ? -containerMargins('bottom', returnAllMargins) : 0
-			}
-			imagePath: "widgets/tabbar"
-			visible: opacity > 0
-			prefix: {
-				let prefix;
-				switch (Plasmoid.location) {
-				case PlasmaCore.Types.LeftEdge:
-					prefix = "west-active-tab";
-					break;
-				case PlasmaCore.Types.TopEdge:
-					prefix = "north-active-tab";
-					break;
-				case PlasmaCore.Types.RightEdge:
-					prefix = "east-active-tab";
-					break;
-				default:
-					prefix = "south-active-tab";
-				}
-				if (!hasElementPrefix(prefix)) {
-					prefix = "active-tab";
-				}
-				return prefix;
-			}
-			opacity: activeController.active ? 1 : 0
+			anchors.centerIn: parent
+			width: vertical ? Math.min(length, parent.width) : Math.min(thickness, parent.width)
+			height: vertical ? Math.min(thickness, parent.height) : Math.min(length, parent.height)
 
-			Behavior on opacity {
-				NumberAnimation {
-					duration: Kirigami.Units.shortDuration
-					easing.type: Easing.InOutQuad
-				}
+			radius: Math.max(0, Math.min(Plasmoid.configuration.cornerRadius, width / 2, height / 2))
+
+			color: root.pillDisplayColor
+			// No border/outline - just the solid capsule.
+
+			Behavior on color {
+				ColorAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
+			}
+			Behavior on width {
+				NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
+			}
+			Behavior on height {
+				NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
 			}
 		}
 

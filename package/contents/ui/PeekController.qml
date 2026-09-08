@@ -1,30 +1,49 @@
 /*
-	SPDX-FileCopyrightText: 2022 ivan (@ratijas) tkachenko <me@ratijas.tk>
+ * SPDX-FileCopyrightText: 2022 ivan (@ratijas) tkachenko <me@ratijas.tk>
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
 
-	SPDX-License-Identifier: GPL-2.0-or-later
-*/
-
-import org.kde.plasma.private.showdesktop 0.1
+import QtQuick 2.0
 import org.kde.plasma.plasmoid 2.0
 
-
-Controller {
+Item {
 	id: controller
 
-	titleInactive: i18ndc("plasma_applet_org.kde.plasma.showdesktop", "@action:button", "Peek at Desktop")
-	titleActive: Plasmoid.containment.corona.editMode ? titleInactive : i18ndc("plasma_applet_org.kde.plasma.showdesktop", "@action:button", "Stop Peeking at Desktop")
+	property string titleInactive: i18nc("@action:button", "Peek at Desktop")
+	property string titleActive: Plasmoid.containment.corona.editMode ? titleInactive : i18nc("@action:button", "Stop Peeking at Desktop")
+	property string descriptionActive: i18nc("@info:tooltip", "Moves windows back to their original positions")
+	property string descriptionInactive: i18nc("@info:tooltip", "Temporarily shows the desktop by moving windows away")
+	property bool active: Plasmoid.shellInterface ? Plasmoid.shellInterface.showDesktop : false
 
-	descriptionActive: i18ndc("plasma_applet_org.kde.plasma.showdesktop", "@info:tooltip", "Moves windows back to their original positions")
-	descriptionInactive: i18ndc("plasma_applet_org.kde.plasma.showdesktop", "@info:tooltip", "Temporarily shows the desktop by moving windows away")
+	// Ensure the state is synchronized with the shell interface
+	onActiveChanged: {
+		if (Plasmoid.shellInterface && Plasmoid.shellInterface.showDesktop !== active) {
+			Plasmoid.shellInterface.showDesktop = active;
+		}
+	}
 
-	active: showdesktop.showingDesktop
+	// Sync with shell interface when it becomes available
+	Connections {
+		target: Plasmoid.shellInterface
+		function onShowDesktopChanged() {
+			active = Plasmoid.shellInterface.showDesktop;
+		}
+	}
 
-	// override
+	// Initialize the state when component is created
+	Component.onCompleted: {
+		if (Plasmoid.shellInterface) {
+			active = Plasmoid.shellInterface.showDesktop;
+		}
+	}
+
 	function toggle() {
-		showdesktop.toggleDesktop();
+		if (Plasmoid.shellInterface) {
+			Plasmoid.shellInterface.showDesktop = !Plasmoid.shellInterface.showDesktop;
+			active = Plasmoid.shellInterface.showDesktop;
+		}
 	}
 
-	readonly property ShowDesktop showdesktop: ShowDesktop {
-		id: showdesktop
-	}
+	// Handle widget clicks
+	Plasmoid.onActivated: toggle()
 }

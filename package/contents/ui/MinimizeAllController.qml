@@ -1,24 +1,31 @@
 /*
-	SPDX-FileCopyrightText: 2015 Sebastian Kügler <sebas@kde.org>
-	SPDX-FileCopyrightText: 2016 Anthony Fieroni <bvbfan@abv.bg>
-	SPDX-FileCopyrightText: 2018 David Edmundson <davidedmundson@kde.org>
-	SPDX-FileCopyrightText: 2022 ivan (@ratijas) tkachenko <me@ratijas.tk>
-
-	SPDX-License-Identifier: GPL-2.0-or-later
-*/
+ * SPDX-FileCopyrightText: 2015 Sebastian Kügler <sebas@kde.org>
+ * SPDX-FileCopyrightText: 2016 Anthony Fieroni <bvbfan@abv.bg>
+ * SPDX-FileCopyrightText: 2018 David Edmundson <davidedmundson@kde.org>
+ * SPDX-FileCopyrightText: 2022 ivan (@ratijas) tkachenko <me@ratijas.tk>
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
 
 import QtQml 2.15
-
+import org.kde.plasma.plasmoid 2.0
 import org.kde.taskmanager 0.1 as TaskManager
 
 Controller {
 	id: controller
 
-	titleActive: i18ndc("plasma_applet_org.kde.plasma.showdesktop", "@action:button", "Restore All Minimized Windows")
-	titleInactive: i18ndc("plasma_applet_org.kde.plasma.showdesktop", "@action:button", "Minimize All Windows")
+	titleActive: i18nc("@action:button", "Restore All Minimized Windows")
+	titleInactive: i18nc("@action:button", "Minimize All Windows")
 
-	descriptionActive: i18ndc("plasma_applet_org.kde.plasma.showdesktop", "@info:tooltip", "Restores the previously minimized windows")
-	descriptionInactive: i18ndc("plasma_applet_org.kde.plasma.showdesktop", "@info:tooltip", "Shows the Desktop by minimizing all windows")
+	descriptionActive: i18nc("@info:tooltip", "Restores the previously minimized windows")
+	descriptionInactive: i18nc("@info:tooltip", "Shows the Desktop by minimizing all windows")
+
+	// Default to ON state
+	active: Plasmoid.configuration.minimizeAllActive !== undefined ? Plasmoid.configuration.minimizeAllActive : true
+
+	onActiveChanged: {
+		Plasmoid.configuration.minimizeAllActive = active;
+	}
 
 	readonly property QtObject tasksModel: TaskManager.TasksModel {
 		id: tasksModel

@@ -22,7 +22,7 @@
 			<default>qdbus org.kde.kglobalaccel /component/kmix invokeShortcut "decrease_volume"</default>
 		</entry>
 		<entry name="size" type="int">
-			<default>8</default>
+			<default>4</default>
 		</entry>
 		<entry name="peekingEnabled" type="bool">
 			<default>false</default>
@@ -38,6 +38,21 @@
 		</entry>
 		<entry name="pressedColor" type="string">
 			<default></default>
+		</entry>
+		<entry name="useAccentColor" type="bool">
+			<default>true</default>
+		</entry>
+		<entry name="activeColor" type="string">
+			<default></default>
+		</entry>
+		<entry name="cornerRadius" type="int">
+			<default>4</default>
+		</entry>
+		<entry name="pillThickness" type="int">
+			<default>2</default>
+		</entry>
+		<entry name="pillLength" type="int">
+			<default>10</default>
 		</entry>
 	</group>
 </kcfg>

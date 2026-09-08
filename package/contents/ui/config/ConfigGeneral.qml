@@ -23,10 +23,6 @@ LibConfig.FormKCM {
 		id: config
 	}
 
-	Widget.PanelMargins {
-		id: panelMargins
-	}
-
 	function setClickCommand(command) {
 		cfg_click_action = 'run_command'
 		clickGroup_runcommand.checked = true
@@ -47,33 +43,70 @@ LibConfig.FormKCM {
 		label.Layout.topMargin: 0
 	}
 
-	RowLayout {
+	LibConfig.SpinBox {
 		Kirigami.FormData.label: i18n("Size:")
-		LibConfig.SpinBox {
-			id: sizeSpinBox
-			configKey: 'size'
-			suffix: i18n("px")
-			from: 4 // Mouse Events are ignored with sizes smaller than 4px (Issue #26)
-		}
-		QQC2.Label {
-			readonly property int buttonTotalSize: sizeSpinBox.value + panelMargins.panelEdgeMargin
-			text: i18n(" + %1px (Panel Margin) = %2px", panelMargins.panelEdgeMargin, buttonTotalSize)
-		}
+		configKey: 'size'
+		suffix: i18n("px")
+	}
+
+	LibConfig.SpinBox {
+		Kirigami.FormData.label: i18n("Pill thickness:")
+		configKey: 'pillThickness'
+		suffix: i18n("px")
+		minimumValue: 1
+		maximumValue: 200
+	}
+
+	LibConfig.SpinBox {
+		Kirigami.FormData.label: i18n("Pill length:")
+		configKey: 'pillLength'
+		suffix: i18n("px")
+		minimumValue: 2
+		maximumValue: 200
+	}
+
+	LibConfig.Alert {
+		Kirigami.FormData.isSection: true
+		messageType: LibConfig.Alert.AlertType.Information
+		text: i18n("Thickness and length only change how the visible pill is drawn - a thin, discreet line, hidden until you hover, press, or activate it. The clickable/hoverable area above (\"Size\") stays the same, so the widget remains just as easy to click.")
+	}
+
+	LibConfig.SpinBox {
+		Kirigami.FormData.label: i18n("Corner radius:")
+		configKey: 'cornerRadius'
+		suffix: i18n("px")
+		minimumValue: 0
+		maximumValue: 50
+	}
+
+	LibConfig.CheckBox {
+		Kirigami.FormData.label: i18n("Accent color:")
+		text: i18n("Use KDE Plasma accent color")
+		configKey: 'useAccentColor'
+	}
+
+	LibConfig.Alert {
+		Kirigami.FormData.isSection: true
+		visible: !plasmoid.configuration.useAccentColor
+		text: i18n("Disable this to set custom colors below instead of following the system accent color.")
 	}
 
 	LibConfig.ColorField {
-		Kirigami.FormData.label: i18n("Edge Color:")
-		configKey: 'edgeColor'
+		Kirigami.FormData.label: i18n("Active Color:")
+		configKey: 'activeColor'
+		visible: !plasmoid.configuration.useAccentColor
 	}
 
 	LibConfig.ColorField {
 		Kirigami.FormData.label: i18n("Hovered Color:")
 		configKey: 'hoveredColor'
+		visible: !plasmoid.configuration.useAccentColor
 	}
 
 	LibConfig.ColorField {
 		Kirigami.FormData.label: i18n("Pressed Color:")
 		configKey: 'pressedColor'
+		visible: !plasmoid.configuration.useAccentColor
 	}
 
 
